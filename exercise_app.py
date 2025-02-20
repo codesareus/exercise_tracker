@@ -13,6 +13,7 @@ LOCAL_TIMEZONE = pytz.timezone('America/Chicago')  # Replace with your local tim
 
 # Define activities and their exercise scores
 activities = {
+    "静坐30m": 0.16, 
     "慢跑5千米60m": 0.333,
     "武当压腿+活骨功20m": 0.111,
     "五行气功10m": 0.056,
@@ -75,7 +76,7 @@ st.sidebar.title("Daily Activities")
 selected_activities = []
 for i, (activity, score) in enumerate(activities.items()):
     # Skip rendering the checkbox for the 8th activity
-    if i == 11:  # Index 7 corresponds to the 8th activity
+    if i == 12:  # Index 7 corresponds to the 8th activity
         st.sidebar.write(activity)  # Display the activity name without a checkbox
         continue  # Skip the rest of the loop for this activity
 
