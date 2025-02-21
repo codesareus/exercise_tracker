@@ -36,32 +36,29 @@ df["Hours"] = df["Hours"].astype(str)
 col1, col2 = st.columns([1, 1])
 with col1:
     st.write("### Exercise Log")
-
-    
-
 # Editable table
-edited_df = st.data_editor(
-    df,
-    column_config={
-        "Date": st.column_config.TextColumn(disabled=True),
-        "Hours": st.column_config.TextColumn(),
-        "Score": st.column_config.NumberColumn(disabled=True)
-    },
-    num_rows="dynamic"
-)
+    edited_df = st.data_editor(
+        df,
+        column_config={
+            "Date": st.column_config.TextColumn(disabled=True),
+            "Hours": st.column_config.TextColumn(),
+            "Score": st.column_config.NumberColumn(disabled=True)
+        },
+        num_rows="dynamic"
+    )
 
-# Update dataframe with user input
-for i, row in edited_df.iterrows():
-    try:
-        hours = float(row["Hours"]) if row["Hours"].strip() else 0
-    except ValueError:
-        hours = 0
+    # Update dataframe with user input
+    for i, row in edited_df.iterrows():
+        try:
+            hours = float(row["Hours"]) if row["Hours"].strip() else 0
+        except ValueError:
+            hours = 0
 
-    df.at[i, "Hours"] = row["Hours"]
-    df.at[i, "Score"] = hours / 3
+        df.at[i, "Hours"] = row["Hours"]
+        df.at[i, "Score"] = hours / 3
 
-# Save updated data back to CSV
-df.to_csv(FILE_PATH, index=False)
+    # Save updated data back to CSV
+    df.to_csv(FILE_PATH, index=False)
 
 with col2:
     # Display updated data
