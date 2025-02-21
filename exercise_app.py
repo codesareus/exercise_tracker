@@ -54,7 +54,7 @@ with col1:
         except ValueError:
             hours = 0
         
-        df.at[i, "Score"] = hours / 3
+        df.at[i, "Score"] = round(hours / 3, 2)
         df.at[i, "Hours"] = row["Hours"]
         
     if st.button("Save"):
