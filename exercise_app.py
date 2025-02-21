@@ -7,7 +7,7 @@ import seaborn as sns
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import r2_score
-from datetime import date, timedelta
+from datetime import date
 
 # File path
 FILE_PATH = "exercise_data.csv"
@@ -32,12 +32,12 @@ if today not in df["Date"].values:
 # Ensure "Hours" is treated as a string to allow blank input
 df["Hours"] = df["Hours"].astype(str)
 
-# Layout: Side-by-side columns
+# Create two text areas side-by-side
 col1, col2 = st.columns([1, 1])
 with col1:
     st.write("### Exercise Log")
-with col2:
-    st.write("### Analysis & Trends")
+
+    
 
 # Editable table
 edited_df = st.data_editor(
@@ -63,27 +63,23 @@ for i, row in edited_df.iterrows():
 # Save updated data back to CSV
 df.to_csv(FILE_PATH, index=False)
 
+with col2:
+    # Display updated data
+    st.write("### Updated Data")
+    st.write(df[["Date", "Hours", "Score"]])
+
+######plot
+st.write("### Analysis & Trends")
 # Convert Date to numerical format for regression analysis
-df["Date"] = pd.to_datetime(df["Date"])
-df = df.sort_values("Date")
-
-# --- Drop-down menus ---
-st.sidebar.write("### Data & Analysis Settings")
-
-# 1. Select date range (last 7, 14, or 21 days)
-days_filter = st.sidebar.selectbox("Select Time Range", [7, 14, 21], index=0)
-start_date = df["Date"].max() - timedelta(days=days_filter)
-filtered_df = df[df["Date"] >= start_date]
-
-# 2. Select polynomial degree (2 to 10)
-poly_degree = st.sidebar.selectbox("Select Polynomial Degree", list(range(2, 11)), index=0)
+df["Date_Num"] = pd.to_datetime(df["Date"]).map(pd.Timestamp.toordinal)
+df = df.sort_values("Date_Num")
 
 # Filter out empty scores
-filtered_df = filtered_df[filtered_df["Score"] > 0]
+df = df[df["Score"] > 0]
 
-if len(filtered_df) > 1:
-    X = filtered_df["Date"].map(pd.Timestamp.toordinal).values.reshape(-1, 1)
-    y = filtered_df["Score"].values
+if len(df) > 1:
+    X = df["Date_Num"].values.reshape(-1, 1)
+    y = df["Score"].values
 
     # --- Linear Regression ---
     lin_reg = LinearRegression()
@@ -91,8 +87,8 @@ if len(filtered_df) > 1:
     y_pred_linear = lin_reg.predict(X)
     r2_linear = r2_score(y, y_pred_linear)
 
-    # --- Polynomial Regression ---
-    poly = PolynomialFeatures(degree=poly_degree)
+    # --- Polynomial Regression (Degree 2) ---
+    poly = PolynomialFeatures(degree=2)
     X_poly = poly.fit_transform(X)
     poly_reg = LinearRegression()
     poly_reg.fit(X_poly, y)
@@ -103,19 +99,17 @@ if len(filtered_df) > 1:
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Scatter plot with dashed line connecting actual points
-    sns.scatterplot(x=filtered_df["Date"], y=filtered_df["Score"], ax=ax, color="blue", label="Actual Scores")
-    ax.plot(filtered_df["Date"], filtered_df["Score"], linestyle="dashed", color="blue", alpha=0.6)
+    sns.scatterplot(x=df["Date"], y=df["Score"], ax=ax, color="blue", label="Actual Scores")
+    ax.plot(df["Date"], df["Score"], linestyle="dashed", color="blue", alpha=0.6)
 
     # Linear regression line
-    ax.plot(filtered_df["Date"], y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
+    ax.plot(df["Date"], y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
 
     # Polynomial regression line
-    ax.plot(filtered_df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (Degree {poly_degree}, R²={r2_poly:.3f})")
-
+    ax.plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
     # Grid lines
-    ax.grid(True, linestyle="--", alpha=0.6)
-
-    ax.set_title(f"Score Analysis: Last {days_filter} Days")
+    ax.grid(True, linestyle="--", alpha=0.6)  # Add dashed grid with transparency
+    ax.set_title("Score Analysis: Actual Data, Linear & Polynomial Regression")
     ax.set_xlabel("Date")
     ax.set_ylabel("Score")
     ax.legend()
@@ -127,11 +121,7 @@ if len(filtered_df) > 1:
 else:
     st.warning("Not enough data for regression analysis. Enter more scores!")
 
-# Display updated data
-st.write("### Updated Data (Last {} Days)".format(days_filter))
-st.write(filtered_df[["Date", "Hours", "Score"]])
-
-    ##################################################
+##################################################
 import streamlit as st
 from boy_image import create_boy_image
 
