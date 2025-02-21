@@ -26,7 +26,7 @@ today = date.today().strftime("%Y-%m-%d")
 
 # Check if today's date is already in the file
 if today not in df["Date"].values:
-    new_entry = pd.DataFrame([{"Date": today, "Hours": "", "Score": 0}])
+    new_entry = pd.DataFrame([{"Date": today, "Score": 0, "Hours": ""}])
     df = pd.concat([df, new_entry], ignore_index=True)
 
 # Ensure "Hours" is treated as a string to allow blank input
@@ -41,8 +41,8 @@ with col1:
         df,
         column_config={
             "Date": st.column_config.TextColumn(disabled=True),
-            "Hours": st.column_config.TextColumn(),
-            "Score": st.column_config.NumberColumn(disabled=True)
+            "Score": st.column_config.NumberColumn(disabled=True),
+            "Hours": st.column_config.TextColumn()
         },
         num_rows="dynamic"
     )
@@ -53,9 +53,9 @@ with col1:
             hours = float(row["Hours"]) if row["Hours"].strip() else 0
         except ValueError:
             hours = 0
-
-        df.at[i, "Hours"] = row["Hours"]
+        
         df.at[i, "Score"] = hours / 3
+        df.at[i, "Hours"] = row["Hours"]
 
     # Save updated data back to CSV
     df.to_csv(FILE_PATH, index=False)
@@ -63,7 +63,7 @@ with col1:
 with col2:
     # Display updated data
     st.write("### Updated Data")
-    st.write(df[["Date", "Hours", "Score"]])
+    st.write(df[["Date", "Score", "Hours"]])
 
 ######plot
 st.write("### Analysis & Trends")
