@@ -30,7 +30,7 @@ activities = {
 
 # File paths for daily and monthly data (saved in the root directory)
 DAILY_DATA_FILE = "daily_data.csv"
-MONTHLY_DATA_FILE = "monthly_data.csv"
+MONTHLY_DATA_FILE = "exercise_data.csv"
 
 # Function to load data from file
 def load_data(file_path, columns):
