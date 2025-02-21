@@ -28,7 +28,6 @@ today = date.today().strftime("%Y-%m-%d")
 
 # Check if today's date is already in the file
 if today not in df["Date"].values:
-    # Append a new row for today
     new_entry = pd.DataFrame([{"Date": today, "Hours": "", "Score": 0}])
     df = pd.concat([df, new_entry], ignore_index=True)
 
@@ -36,7 +35,7 @@ if today not in df["Date"].values:
 df["Hours"] = df["Hours"].astype(str)
 
 # Create two text areas side-by-side
-col1, col2 = st.columns(2)
+col1, col2 = st.columns([1, 1])
 with col1:
     st.write("### Exercise Log")
 with col2:
@@ -47,8 +46,8 @@ edited_df = st.data_editor(
     df,
     column_config={
         "Date": st.column_config.TextColumn(disabled=True),
-        "Hours": st.column_config.TextColumn(),  # Editable
-        "Score": st.column_config.NumberColumn(disabled=True)  # Auto-calculated
+        "Hours": st.column_config.TextColumn(),
+        "Score": st.column_config.NumberColumn(disabled=True)
     },
     num_rows="dynamic"
 )
@@ -58,22 +57,21 @@ for i, row in edited_df.iterrows():
     try:
         hours = float(row["Hours"]) if row["Hours"].strip() else 0
     except ValueError:
-        hours = 0  # Handle invalid input
+        hours = 0
 
     df.at[i, "Hours"] = row["Hours"]
-    df.at[i, "Score"] = hours / 3  # Auto-update score
+    df.at[i, "Score"] = hours / 3
 
 # Save updated data back to CSV
 df.to_csv(FILE_PATH, index=False)
 
 # Convert Date to numerical format for regression analysis
 df["Date_Num"] = pd.to_datetime(df["Date"]).map(pd.Timestamp.toordinal)
-df = df.sort_values("Date_Num")  # Ensure sorted order
+df = df.sort_values("Date_Num")
 
 # Filter out empty scores
 df = df[df["Score"] > 0]
 
-# Ensure enough data for regression
 if len(df) > 1:
     X = df["Date_Num"].values.reshape(-1, 1)
     y = df["Score"].values
@@ -92,35 +90,26 @@ if len(df) > 1:
     y_pred_poly = poly_reg.predict(X_poly)
     r2_poly = r2_score(y, y_pred_poly)
 
-    # --- PLOTTING ---
-    fig, axs = plt.subplots(3, 1, figsize=(8, 12))
+    # --- SINGLE PLOT ---
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # 1. Score vs. Date
-    sns.scatterplot(x=df["Date"], y=df["Score"], ax=axs[0], color="blue")
-    axs[0].set_title("Score vs. Date")
-    axs[0].set_xlabel("Date")
-    axs[0].set_ylabel("Score")
-    axs[0].tick_params(axis='x', rotation=45)
+    # Scatter plot with dashed line connecting actual points
+    sns.scatterplot(x=df["Date"], y=df["Score"], ax=ax, color="blue", label="Actual Scores")
+    ax.plot(df["Date"], df["Score"], linestyle="dashed", color="blue", alpha=0.6)
 
-    # 2. Linear Regression
-    sns.scatterplot(x=df["Date"], y=df["Score"], ax=axs[1], color="blue", label="Actual Scores")
-    axs[1].plot(df["Date"], y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
-    axs[1].set_title("Linear Regression Analysis")
-    axs[1].set_xlabel("Date")
-    axs[1].set_ylabel("Score")
-    axs[1].legend()
-    axs[1].tick_params(axis='x', rotation=45)
+    # Linear regression line
+    ax.plot(df["Date"], y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
 
-    # 3. Polynomial Regression
-    sns.scatterplot(x=df["Date"], y=df["Score"], ax=axs[2], color="blue", label="Actual Scores")
-    axs[2].plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
-    axs[2].set_title("Polynomial Regression Analysis (Degree 2)")
-    axs[2].set_xlabel("Date")
-    axs[2].set_ylabel("Score")
-    axs[2].legend()
-    axs[2].tick_params(axis='x', rotation=45)
+    # Polynomial regression line
+    ax.plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
 
-    # Show plots in Streamlit
+    ax.set_title("Score Analysis: Actual Data, Linear & Polynomial Regression")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Score")
+    ax.legend()
+    ax.tick_params(axis='x', rotation=45)
+
+    # Show plot in Streamlit
     st.pyplot(fig)
 
 else:
@@ -129,7 +118,6 @@ else:
 # Display updated data
 st.write("### Updated Data")
 st.write(df[["Date", "Hours", "Score"]])
-
     ##################################################
 import streamlit as st
 from boy_image import create_boy_image
