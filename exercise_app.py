@@ -21,32 +21,6 @@ else:
 # Ensure "Date" column is a string
 df["Date"] = df["Date"].astype(str)
 
-#Convert "Date" column to datetime
-df["Date"] = pd.to_datetime(df["Date"], errors='coerce')
-
-# Get today's date
-today = date.today()
-
-# Find the last recorded date (if no data, start from today)
-if df.empty:
-    last_date = today
-else:
-    last_date = df["Date"].max()
-
-# Generate missing dates from last_date to today
-all_dates = pd.date_range(start=last_date, end=today)
-
-# Create a new DataFrame with all dates
-full_df = pd.DataFrame({"Date": all_dates})
-
-# Merge with existing data (fill missing scores with 0)
-df = full_df.merge(df, on="Date", how="left")
-df["Score"].fillna(0, inplace=True)   # Default missing scores to 0
-df["Hours"].fillna("", inplace=True)  # Keep Hours empty for user input
-
-# Convert Date back to string for display
-df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
-
 # Get today's date
 today = date.today().strftime("%Y-%m-%d")
 
