@@ -65,9 +65,10 @@ with col1:
 with col2:
     # Display updated data
     st.write("### Updated Data")
-    st.write(df[["Date", "Score", "Hours"]])
+    #st.write(df[["Date", "Score", "Hours"]])
+    st.write(df[["Date", "Score", "Hours"]].tail(5))
 
-######plot
+####################plot
 st.write("### Analysis & Trends")
 # Convert Date to numerical format for regression analysis
 df["Date_Num"] = pd.to_datetime(df["Date"]).map(pd.Timestamp.toordinal)
