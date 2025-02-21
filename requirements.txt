@@ -5,3 +5,4 @@ datetime
 streamlit
 pandas
 pathlib
+seaborn
