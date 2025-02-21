@@ -38,32 +38,39 @@ df["Hours"] = df["Hours"].astype(str)
 col1, col2 = st.columns([1, 1])
 with col1:
     st.write("### Exercise Log")
-with col2:
-    st.write("### Analysis & Trends")
 
 # Editable table
-edited_df = st.data_editor(
-    df,
-    column_config={
-        "Date": st.column_config.TextColumn(disabled=True),
-        "Hours": st.column_config.TextColumn(),
-        "Score": st.column_config.NumberColumn(disabled=True)
-    },
-    num_rows="dynamic"
-)
+    edited_df = st.data_editor(
+        df,
+        column_config={
+            "Date": st.column_config.TextColumn(disabled=True),
+            "Hours": st.column_config.TextColumn(),
+            "Score": st.column_config.NumberColumn(disabled=True)
+        },
+        num_rows="dynamic"
+    )
 
-# Update dataframe with user input
-for i, row in edited_df.iterrows():
-    try:
-        hours = float(row["Hours"]) if row["Hours"].strip() else 0
-    except ValueError:
-        hours = 0
+    # Update dataframe with user input
+    for i, row in edited_df.iterrows():
+        try:
+            hours = float(row["Hours"]) if row["Hours"].strip() else 0
+        except ValueError:
+            hours = 0
 
-    df.at[i, "Hours"] = row["Hours"]
-    df.at[i, "Score"] = hours / 3
+        df.at[i, "Hours"] = row["Hours"]
+        df.at[i, "Score"] = hours / 3
 
-# Save updated data back to CSV
-df.to_csv(FILE_PATH, index=False)
+    # Save updated data back to CSV
+    df.to_csv(FILE_PATH, index=False)
+with col2:
+    # Display updated data
+    st.write("### Updated Data")
+    st.write(df[["Date", "Hours", "Score"]])
+
+
+##### plotting
+
+st.write("### Analysis & Trends")
 
 # Convert Date to numerical format for regression analysis
 df["Date_Num"] = pd.to_datetime(df["Date"]).map(pd.Timestamp.toordinal)
@@ -102,7 +109,8 @@ if len(df) > 1:
 
     # Polynomial regression line
     ax.plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
-
+    #add grids
+    ax.grid(True, linestyle="--", alpha=0.6)  # Add dashed grid with transparency
     ax.set_title("Score Analysis: Actual Data, Linear & Polynomial Regression")
     ax.set_xlabel("Date")
     ax.set_ylabel("Score")
@@ -115,9 +123,6 @@ if len(df) > 1:
 else:
     st.warning("Not enough data for regression analysis. Enter more scores!")
 
-# Display updated data
-st.write("### Updated Data")
-st.write(df[["Date", "Hours", "Score"]])
     ##################################################
 import streamlit as st
 from boy_image import create_boy_image
