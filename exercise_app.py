@@ -26,13 +26,24 @@ if today not in df["Date"].values:
     new_entry = pd.DataFrame([{"Date": today, "Hours": "", "Score": 0}])
     df = pd.concat([df, new_entry], ignore_index=True)
 
-# Convert to editable format
-edited_df = st.data_editor(df, column_config={"Date": st.column_config.TextColumn(disabled=True)})
+# Ensure "Hours" is treated as a string to allow blank input
+df["Hours"] = df["Hours"].astype(str)
 
-# Update the dataframe with user input
+# Display editable table
+edited_df = st.data_editor(
+    df,
+    column_config={
+        "Date": st.column_config.TextColumn(disabled=True),
+        "Hours": st.column_config.TextColumn(),  # Editable
+        "Score": st.column_config.NumberColumn(disabled=True)  # Auto-calculated
+    },
+    num_rows="dynamic"  # Allows adding new rows if needed
+)
+
+# Update dataframe with user input
 for i, row in edited_df.iterrows():
     try:
-        hours = float(row["Hours"]) if row["Hours"] else 0
+        hours = float(row["Hours"]) if row["Hours"].strip() else 0
     except ValueError:
         hours = 0  # Handle invalid input
 
@@ -43,7 +54,7 @@ for i, row in edited_df.iterrows():
 df.to_csv(FILE_PATH, index=False)
 
 # Display updated data
-st.write("Updated Data:")
+
 st.write(df)
 
     ##################################################
