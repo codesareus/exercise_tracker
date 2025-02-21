@@ -73,8 +73,6 @@ with col1:
         st.rerun()
 
 with col2:
-    st.write("### Recent Entries")
-    st.write(df.tail(5))
     # Display updated data
     st.write("### Updated Data")
     st.write(df[["Date", "Score", "Hours"]])
