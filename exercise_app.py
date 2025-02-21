@@ -10,6 +10,12 @@ from sklearn.metrics import r2_score
 from datetime import date
 
 # File path
+import streamlit as st
+import pandas as pd
+import os
+from datetime import date
+
+# File path
 FILE_PATH = "exercise_data.csv"
 
 # Load existing data or create a new one
@@ -18,52 +24,60 @@ if os.path.exists(FILE_PATH):
 else:
     df = pd.DataFrame(columns=["Date", "Hours", "Score"])
 
-# Ensure "Date" column is a string
-df["Date"] = df["Date"].astype(str)
+# Convert to datetime and fill missing dates
+try:
+    df['Date'] = pd.to_datetime(df['Date'])
+    all_dates = pd.date_range(df['Date'].min(), pd.Timestamp.today(), freq='D')
+    missing_dates = all_dates.difference(df['Date'])
+    for d in missing_dates:
+        df = pd.concat([df, pd.DataFrame([{'Date': d, 'Hours': '', 'Score': 0}])], ignore_index=True)
+    df['Date'] = df['Date'].dt.strftime('%Y-%m-%d')
+except:
+    df = pd.DataFrame([{'Date': date.today().strftime('%Y-%m-%d'), 'Hours': '', 'Score': 0}])
 
-# Get today's date
-today = date.today().strftime("%Y-%m-%d")
-
-# Check if today's date is already in the file
-if today not in df["Date"].values:
-    new_entry = pd.DataFrame([{"Date": today, "Hours": "", "Score": 0}])
-    df = pd.concat([df, new_entry], ignore_index=True)
-
-# Ensure "Hours" is treated as a string to allow blank input
+# Ensure proper data types
 df["Hours"] = df["Hours"].astype(str)
+df = df.sort_values('Date', ascending=False).reset_index(drop=True)
 
-# Create two text areas side-by-side
 col1, col2 = st.columns([1, 1])
 with col1:
     st.write("### Exercise Log")
-# Editable table
+    
     edited_df = st.data_editor(
         df,
         column_config={
             "Date": st.column_config.TextColumn(disabled=True),
-            "Hours": st.column_config.TextColumn(),
-            "Score": st.column_config.NumberColumn(disabled=True)
+            "Score": st.column_config.NumberColumn(disabled=True),
+            "Hours": st.column_config.TextColumn()
         },
         num_rows="dynamic"
     )
 
-    # Update dataframe with user input
-    for i, row in edited_df.iterrows():
+    # Filter out empty rows
+    edited_df = edited_df[edited_df['Date'].astype(bool)]
+
+    # Update values in original dataframe
+    for _, row in edited_df.iterrows():
+        date_str = row['Date']
+        hours_str = row['Hours']
         try:
-            hours = float(row["Hours"]) if row["Hours"].strip() else 0
-        except ValueError:
+            hours = float(hours_str) if hours_str.strip() else 0
+        except:
             hours = 0
+            
+        score = round(hours / 3, 2)
+        df.loc[df['Date'] == date_str, ['Hours', 'Score']] = [hours_str, score]
 
-        df.at[i, "Hours"] = row["Hours"]
-        df.at[i, "Score"] = hours / 3
-
-    # Save updated data back to CSV
-    df.to_csv(FILE_PATH, index=False)
+    if st.button("Save"):
+        df.to_csv(FILE_PATH, index=False)
+        st.rerun()
 
 with col2:
+    st.write("### Recent Entries")
+    st.write(df.tail(5))
     # Display updated data
     st.write("### Updated Data")
-    st.write(df[["Date", "Hours", "Score"]])
+    st.write(df[["Date", "Score", "Hours"]])
 
 ######plot
 st.write("### Analysis & Trends")
