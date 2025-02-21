@@ -56,9 +56,11 @@ with col1:
         
         df.at[i, "Score"] = hours / 3
         df.at[i, "Hours"] = row["Hours"]
-
-    # Save updated data back to CSV
-    df.to_csv(FILE_PATH, index=False)
+        
+    if st.button("Save"):
+        # Save updated data back to CSV
+        df.to_csv(FILE_PATH, index=False)
+        st.rerun()
 
 with col2:
     # Display updated data
