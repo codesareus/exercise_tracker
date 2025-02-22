@@ -7,8 +7,12 @@ import seaborn as sns
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import r2_score
-from datetime import date
-#import matplotlib.dates as mdates
+from datetime import date, datetime
+import pytz
+import matplotlib.dates as mdates
+
+# Set the Midwest time zone (Central Time)
+midwest_tz = pytz.timezone('US/Central')
 
 # File path
 FILE_PATH = "exercise_data.csv"
@@ -21,8 +25,8 @@ else:
 
 # Convert to datetime and fill missing dates
 try:
-    df['Date'] = pd.to_datetime(df['Date'])
-    all_dates = pd.date_range(df['Date'].min(), pd.Timestamp.today(), freq='D')
+    df['Date'] = pd.to_datetime(df['Date']).dt.tz_localize('UTC').dt.tz_convert(midwest_tz)
+    all_dates = pd.date_range(df['Date'].min(), pd.Timestamp.today(tz=midwest_tz), freq='D')
     missing_dates = all_dates.difference(df['Date'])
     for d in missing_dates:
         df = pd.concat([df, pd.DataFrame([{'Date': d, 'Hours': '', 'Score': 0}])], ignore_index=True)
@@ -47,10 +51,8 @@ with col1:
         },
         num_rows="dynamic"
     )
-
     # Filter out empty rows
     edited_df = edited_df[edited_df['Date'].astype(bool)]
-
     # Update values in original dataframe
     for _, row in edited_df.iterrows():
         date_str = row['Date']
@@ -62,7 +64,6 @@ with col1:
             
         score = round(hours / 3, 2)
         df.loc[df['Date'] == date_str, ['Hours', 'Score']] = [hours_str, score]
-
     if st.button("Save"):
         df.to_csv(FILE_PATH, index=False)
         st.rerun()
@@ -77,20 +78,16 @@ st.write("### Analysis & Trends")
 # Convert Date to numerical format for regression analysis
 df["Date_Num"] = pd.to_datetime(df["Date"]).map(pd.Timestamp.toordinal)
 df = df.sort_values("Date_Num")
-
 # Filter out empty scores
 df = df[df["Score"] > 0]
-
 if len(df) > 1:
     X = df["Date_Num"].values.reshape(-1, 1)
     y = df["Score"].values
-
     # --- Linear Regression ---
     lin_reg = LinearRegression()
     lin_reg.fit(X, y)
     y_pred_linear = lin_reg.predict(X)
     r2_linear = r2_score(y, y_pred_linear)
-
     # --- Polynomial Regression (Degree 2) ---
     poly = PolynomialFeatures(degree=2)
     X_poly = poly.fit_transform(X)
@@ -98,17 +95,13 @@ if len(df) > 1:
     poly_reg.fit(X_poly, y)
     y_pred_poly = poly_reg.predict(X_poly)
     r2_poly = r2_score(y, y_pred_poly)
-
     # --- SINGLE PLOT ---
     fig, ax = plt.subplots(figsize=(10, 6))
-
     # Scatter plot with dashed line connecting actual points
     sns.scatterplot(x=df["Date"], y=df["Score"], ax=ax, color="blue", label="Actual Scores")
     ax.plot(df["Date"], df["Score"], linestyle="dashed", color="blue", alpha=0.6)
-
     # Linear regression line
     ax.plot(df["Date"], y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
-
     # Polynomial regression line
     ax.plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
     # Grid lines
@@ -117,19 +110,16 @@ if len(df) > 1:
     ax.set_xlabel("Date")
     ax.set_ylabel("Score")
     ax.legend()
-
+    
     # Format the X-axis to show a label every 7 days
-    #ax.xaxis.set_major_locator(mdates.DayLocator(interval=7))
-    #ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=7))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     
     ax.tick_params(axis='x', rotation=45)
-
     # Show plot in Streamlit
     st.pyplot(fig)
-
 else:
     st.warning("Not enough data for regression analysis. Enter more scores!")
-
 ##################################################
 import streamlit as st
 from boy_image import create_boy_image
