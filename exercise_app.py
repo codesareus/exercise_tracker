@@ -24,7 +24,7 @@ else:
     # Initialize DataFrame with today's date in Midwest time zone
     today_midwest = datetime.now(midwest_tz).strftime('%Y-%m-%d')
     df = pd.DataFrame(columns=["Date", "Hours", "Score"])
-    df = pd.concat([df, pd.DataFrame([{'Date': today_midwest, 'Hours': '', 'Score': 0}])], ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([{'Date': today_midwest,  'Score': 0, 'Hours': '' }])], ignore_index=True)
 
 # Convert to datetime and fill missing dates
 try:
@@ -32,11 +32,11 @@ try:
     all_dates = pd.date_range(df['Date'].min(), pd.Timestamp.today(tz=midwest_tz), freq='D')
     missing_dates = all_dates.difference(df['Date'])
     for d in missing_dates:
-        df = pd.concat([df, pd.DataFrame([{'Date': d, 'Hours': '', 'Score': 0}])], ignore_index=True)
+        df = pd.concat([df, pd.DataFrame([{'Date': d, 'Score': 0, 'Hours': '' }])], ignore_index=True)
     df['Date'] = df['Date'].dt.strftime('%Y-%m-%d')  # Store dates as strings for CSV compatibility
 except Exception as e:
     st.error(f"Error processing dates: {e}")
-    df = pd.DataFrame([{'Date': date.today().strftime('%Y-%m-%d'), 'Hours': '', 'Score': 0}])
+    df = pd.DataFrame([{'Date': date.today().strftime('%Y-%m-%d'), 'Score': 0,  'Hours': ''}])
 
 # Ensure proper data types
 df["Hours"] = df["Hours"].astype(str)
@@ -49,7 +49,7 @@ with col1:
     # Pre-fill new rows with today's date in Midwest time zone
     today_midwest = datetime.now(midwest_tz).strftime('%Y-%m-%d')
     if df.empty or df.iloc[0]['Date'] != today_midwest:
-        df = pd.concat([pd.DataFrame([{'Date': today_midwest, 'Hours': '', 'Score': 0}]), df], ignore_index=True)
+        df = pd.concat([pd.DataFrame([{'Date': today_midwest, 'Score': 0,  'Hours': '' }]), df], ignore_index=True)
 
     edited_df = st.data_editor(
         df,
@@ -72,7 +72,7 @@ with col1:
             hours = 0
             
         score = round(hours / 3, 2)
-        df.loc[df['Date'] == date_str, ['Hours', 'Score']] = [hours_str, score]
+        df.loc[df['Date'] == date_str, ['Score',  'Hours' ]] = [score, hours_str]
     if st.button("Save"):
         df.to_csv(FILE_PATH, index=False)
         st.rerun()
@@ -80,7 +80,7 @@ with col1:
 with col2:
     # Display updated data
     st.write("### Updated Data")
-    st.write(df[["Date", "Hours", "Score"]])
+    st.write(df[["Date","Score",   "Hours"]])
 
 ######plot
 st.write("### Analysis & Trends")
