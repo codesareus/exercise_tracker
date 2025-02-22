@@ -10,12 +10,6 @@ from sklearn.metrics import r2_score
 from datetime import date
 
 # File path
-import streamlit as st
-import pandas as pd
-import os
-from datetime import date
-
-# File path
 FILE_PATH = "exercise_data.csv"
 
 # Load existing data or create a new one
@@ -122,6 +116,11 @@ if len(df) > 1:
     ax.set_xlabel("Date")
     ax.set_ylabel("Score")
     ax.legend()
+
+    # Format the X-axis to show a label every 7 days
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=7))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    
     ax.tick_params(axis='x', rotation=45)
 
     # Show plot in Streamlit
