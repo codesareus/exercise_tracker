@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import r2_score
 from datetime import date
+import matplotlib.dates as mdates
 
 # File path
 FILE_PATH = "exercise_data.csv"
