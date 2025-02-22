@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import r2_score
 from datetime import date
-import matplotlib.dates as mdates
+#import matplotlib.dates as mdates
 
 # File path
 FILE_PATH = "exercise_data.csv"
@@ -119,8 +119,8 @@ if len(df) > 1:
     ax.legend()
 
     # Format the X-axis to show a label every 7 days
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=7))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    #ax.xaxis.set_major_locator(mdates.DayLocator(interval=7))
+    #ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     
     ax.tick_params(axis='x', rotation=45)
 
