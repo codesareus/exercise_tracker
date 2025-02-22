@@ -10,12 +10,6 @@ from sklearn.metrics import r2_score
 from datetime import date
 
 # File path
-import streamlit as st
-import pandas as pd
-import os
-from datetime import date
-
-# File path
 FILE_PATH = "exercise_data.csv"
 
 # Load existing data or create a new one
@@ -79,7 +73,10 @@ with col2:
 
 ######plot
 st.write("### Analysis & Trends")
-# Convert Date to numerical format for regression analysis
+
+import matplotlib.dates as mdates
+
+# Assuming df is your DataFrame and it has columns "Date" and "Score"
 df["Date_Num"] = pd.to_datetime(df["Date"]).map(pd.Timestamp.toordinal)
 df = df.sort_values("Date_Num")
 
@@ -111,24 +108,25 @@ if len(df) > 1:
     sns.scatterplot(x=df["Date"], y=df["Score"], ax=ax, color="blue", label="Actual Scores")
     ax.plot(df["Date"], df["Score"], linestyle="dashed", color="blue", alpha=0.6)
 
-    # Linear regression line
-    ax.plot(df["Date"], y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
+    # Plot the regression lines
+    ax.plot(df["Date"], y_pred_linear, color="red", label=f"Linear Regression (R² = {r2_linear:.2f})")
+    ax.plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Regression (R² = {r2_poly:.2f})")
 
-    # Polynomial regression line
-    ax.plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
-    # Grid lines
-    ax.grid(True, linestyle="--", alpha=0.6)  # Add dashed grid with transparency
-    ax.set_title("Score Analysis: Actual Data, Linear & Polynomial Regression")
+    # Format the X-axis to show a label every 7 days
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=7))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+
+    # Rotate the date labels for better readability
+    plt.xticks(rotation=45)
+
+    # Add labels and legend
     ax.set_xlabel("Date")
     ax.set_ylabel("Score")
     ax.legend()
-    ax.tick_params(axis='x', rotation=45)
 
-    # Show plot in Streamlit
-    st.pyplot(fig)
-
-else:
-    st.warning("Not enough data for regression analysis. Enter more scores!")
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
 
 ##################################################
 import streamlit as st
