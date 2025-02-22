@@ -73,9 +73,6 @@ with col1:
             
         score = round(hours / 3, 2)
         df.loc[df['Date'] == date_str, ['Score',  'Hours' ]] = [score, hours_str]
-    if st.button("Save"):
-        df.to_csv(FILE_PATH, index=False)
-        st.rerun()
 
 with col2:
     # Display updated data
