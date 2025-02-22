@@ -30,8 +30,9 @@ try:
     missing_dates = all_dates.difference(df['Date'])
     for d in missing_dates:
         df = pd.concat([df, pd.DataFrame([{'Date': d, 'Hours': '', 'Score': 0}])], ignore_index=True)
-    df['Date'] = df['Date'].dt.strftime('%Y-%m-%d')
-except:
+    df['Date'] = df['Date'].dt.strftime('%Y-%m-%d')  # Store dates as strings for CSV compatibility
+except Exception as e:
+    st.error(f"Error processing dates: {e}")
     df = pd.DataFrame([{'Date': date.today().strftime('%Y-%m-%d'), 'Hours': '', 'Score': 0}])
 
 # Ensure proper data types
@@ -98,12 +99,12 @@ if len(df) > 1:
     # --- SINGLE PLOT ---
     fig, ax = plt.subplots(figsize=(10, 6))
     # Scatter plot with dashed line connecting actual points
-    sns.scatterplot(x=df["Date"], y=df["Score"], ax=ax, color="blue", label="Actual Scores")
-    ax.plot(df["Date"], df["Score"], linestyle="dashed", color="blue", alpha=0.6)
+    sns.scatterplot(x=pd.to_datetime(df["Date"]), y=df["Score"], ax=ax, color="blue", label="Actual Scores")
+    ax.plot(pd.to_datetime(df["Date"]), df["Score"], linestyle="dashed", color="blue", alpha=0.6)
     # Linear regression line
-    ax.plot(df["Date"], y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
+    ax.plot(pd.to_datetime(df["Date"]), y_pred_linear, color="red", label=f"Linear Fit (R²={r2_linear:.3f})")
     # Polynomial regression line
-    ax.plot(df["Date"], y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
+    ax.plot(pd.to_datetime(df["Date"]), y_pred_poly, color="green", label=f"Polynomial Fit (R²={r2_poly:.3f})")
     # Grid lines
     ax.grid(True, linestyle="--", alpha=0.6)  # Add dashed grid with transparency
     ax.set_title("Score Analysis: Actual Data, Linear & Polynomial Regression")
