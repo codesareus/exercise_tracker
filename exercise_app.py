@@ -21,7 +21,10 @@ FILE_PATH = "exercise_data.csv"
 if os.path.exists(FILE_PATH):
     df = pd.read_csv(FILE_PATH)
 else:
+    # Initialize DataFrame with today's date in Midwest time zone
+    today_midwest = datetime.now(midwest_tz).strftime('%Y-%m-%d')
     df = pd.DataFrame(columns=["Date", "Hours", "Score"])
+    df = pd.concat([df, pd.DataFrame([{'Date': today_midwest, 'Hours': '', 'Score': 0}])], ignore_index=True)
 
 # Convert to datetime and fill missing dates
 try:
@@ -43,6 +46,11 @@ col1, col2 = st.columns([1, 1])
 with col1:
     st.write("### Exercise Log")
     
+    # Pre-fill new rows with today's date in Midwest time zone
+    today_midwest = datetime.now(midwest_tz).strftime('%Y-%m-%d')
+    if df.empty or df.iloc[0]['Date'] != today_midwest:
+        df = pd.concat([pd.DataFrame([{'Date': today_midwest, 'Hours': '', 'Score': 0}]), df], ignore_index=True)
+
     edited_df = st.data_editor(
         df,
         column_config={
@@ -72,7 +80,7 @@ with col1:
 with col2:
     # Display updated data
     st.write("### Updated Data")
-    st.write(df[["Date", "Score", "Hours"]])
+    st.write(df[["Date", "Hours", "Score"]])
 
 ######plot
 st.write("### Analysis & Trends")
